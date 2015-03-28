@@ -1,17 +1,15 @@
 #include "Player.h"
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
 
-
-Player::Player()
+Player::Player(bool firstPlayer)
 {
     type = 0;
+    isFirstPlayer = firstPlayer;
 }
 
-Player::Player(int typeInit)
+Player::Player(int typeInit, bool firstPlayer)
 {
     type = typeInit;
+    isFirstPlayer = firstPlayer;
 }
 
 int Player::choose()
@@ -32,6 +30,10 @@ int Player::getType(){
     return type;
 }
 
+bool Player::isPlayerOne(){
+    return isFirstPlayer;
+}
+
 int Player::chooseRandom()
 {
     return rand() % 9;
@@ -47,6 +49,7 @@ int Player::chooseHuman()
 int Player::chooseML()
 {
 
-
     return -1;
 }
+
+

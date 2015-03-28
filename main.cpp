@@ -1,68 +1,75 @@
-#include <iostream>
-#include <cstdlib>
+//change things to curses.h
+#include "Global.h"
 #include <string>
 #include <cmath>
-#include <cstdlib>
+#include <ctime>
 #include "Board.h"
 #include "Player.h"
+//#include <dlib/svm.h>
+
+using namespace std;
 
 int main(int argc, char *argv[])
     //argv=arguments
     //argc=number of arguments
 {
+    //system("clear");
     bool firstPlayerTurn;
-    std::cout << "How many games would you like to play?" << std::endl;
-    int numGame, count=0;
-    std::cin >> numGame;
-
+    int numGame, count=0, position;
+    int scoreKeeper[3]={0};
+    int oneType, twoType;
     Board board;
 
-    int oneType, twoType;
-
-    std::cout << "Random:0 Human:1 ML:2" << std::endl;
-    std::cout << "Please choose type for Player 1:" << std::endl;
-    std::cin >> oneType;
-
-    std::cout << "Please choose type for Player 2:" << std::endl;
-    std::cin >> twoType;
+    cout << "How many games would you like to play?" << endl;
+    cin >> numGame;
+    cout << "Random:0 Human:1 ML:2" << endl;
+    cout << "Please choose type for Player 1:" << endl;
+    cin >> oneType;
+    cout << "Please choose type for Player 2:" << endl;
+    cin >> twoType;
 
     Player one(oneType), two(twoType);
-startGame:
-
     firstPlayerTurn = true;
+    clock_t startTime = clock();
 
-    while(!board.win()) {
-        int position;
+startGame:
+   while(!board.win()) {
 choose:
-        std::cout << "Done" << std::endl;
+        if(firstPlayerTurn) position=one.choose();
+        else position=two.choose();
 
-        std::cout << "Player " << (firstPlayerTurn ? "1" : "2") << std::endl;
-        std::cout << "Please enter a position (0 to 8)" << std::endl;
-        if(firstPlayerTurn)
-            position = one.choose();
-        else
-            position = two.choose();
+        if(board.positionCheck(position)) goto choose;
 
-        if(!board.setPosition(position, firstPlayerTurn)) goto choose;
+        board.setPosition(position, firstPlayerTurn);
         board.draw();
-        board.testDraw();
+        //board.testDraw();
         firstPlayerTurn=!firstPlayerTurn;
     }
 
     if(board.win()==1){
-        std::cout << "Tie!" << std::endl;
+        cout << "Tie!" << endl;
+        scoreKeeper[2]+=1;
     }
     else{
-        firstPlayerTurn=!firstPlayerTurn;
-        std::cout << "Player " << (firstPlayerTurn ? "1" : "2") << " won!" << std::endl;
+        cout << "Player " << (!firstPlayerTurn ? "1" : "2") << " won!" << endl;
+        scoreKeeper[firstPlayerTurn]+=1;
     }
 
     board.resetBoard();
-    system("clear");
+    //system("clear");
 
+    cout << count + 1 << "game" << endl;
+    cout << "Player 1: " << scoreKeeper[0] << endl;
+    cout << "Player 2: " << scoreKeeper[1] << endl;
+    cout << "Tie: " << scoreKeeper[2] << endl;
     count++;
     if(count<numGame)
         goto startGame;
+
+    clock_t end = clock();
+    
+    double elapsed = double(end-startTime)/CLOCKS_PER_SEC;
+    cout << elapsed << endl;
 
     return 0;
 }

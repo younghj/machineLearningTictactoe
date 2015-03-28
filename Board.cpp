@@ -1,44 +1,69 @@
 #include "Board.h"
-#include <iostream>
-#include <cstdlib>
-
-int board[9];
-int boardTracker[8];
-
-char drawSymbol(int val);
 
 Board::Board()
 {
     resetBoard();
+    for (int i = 0; i < 4; ++i)
+        scoreKeeper[i]=0;
+
+    root *currGameHistory = new root;
+    node *currBoard = new node;
+
+    currBoard->data = board;
+    currBoard->next = NULL;
+
+    currGameHistory->head = currBoard;
+    currGameHistory->tail = currBoard;
+    currGameHistory->data = 1;
+
     draw();
 }
 
-bool Board::setPosition(int position, bool firstPlayerTurn)
+bool Board::positionCheck(int position)
 {
-    if(board[position]){
-        return 0;
-    }
-    else{
-        int addVal = firstPlayerTurn ? -1 : 1;
+    return abs(board[position]);
+}
 
-        board[position] = addVal;
-        boardTracker[position/3] += addVal;
-        boardTracker[(position%3)+3] += addVal;
+void Board::setPosition(int position, bool firstPlayerTurn)
+{
+    int addVal = firstPlayerTurn ? -1 : 1;
 
-        if(position/4.0 == position/4)
-            boardTracker[6] += addVal;
-        if(position==2 || position==4 || position==6)
-            boardTracker[7] += addVal;
+    board[position] = addVal;
+    boardTracker[position/3] += addVal;
+    zeroTracker[position/3]--;
+
+    boardTracker[(position%3)+3] += addVal;
+    zeroTracker[(position%3)+3]--;
+
+    if(position/4.0 == position/4){
+        boardTracker[6] += addVal;
+        zeroTracker[6]--;
     }
-    return 1;
+
+    if(position==2 || position==4 || position==6){
+        boardTracker[7] += addVal;
+        zeroTracker[7]--;
+    }
+
+    node *currBoard = new node;
+    currBoard->data = board;
+    currBoard->next = NULL;
+
+    currGameHistory->tail->next = currBoard;
+    currGameHistory->tail = currBoard;
+    currGameHistory->data +=1;
 }
 
 int Board::win(){
     for (int i = 0; i < 8; ++i)
-        if(std::abs(boardTracker[i])==3) return 2;//win
+        if(abs(boardTracker[i])==3){
+            return 2; //someone won
+        } 
 
     for (int i = 0; i < 9; ++i)
-        if(board[i]==0) return 0;//no one has won yet
+        if(board[i]==0){
+            return 0; //no one has won yet
+        } 
 
     return 1;//tie
 }
@@ -46,31 +71,47 @@ int Board::win(){
 
 void Board::draw()
 {
-    system("clear");
-    std::cout << std::endl;
+    //system("clear");
+    cout << endl;
     for (int i = 0; i < 9; ++i)
     {
-        std::cout << drawSymbol(i);
+        cout << drawSymbol(i);
         if((i+1)%3){
-            std::cout << "|";
+            cout << "|";
         }
         else{
-            std::cout << std::endl;
-            std::cout << ((i!=8)?"-----":"");
-            std::cout << std::endl;
+            cout << endl;
+            cout << ((i!=8)?"-----":"");
+            cout << endl;
         }
     }
 }
 
 void Board::resetBoard()
 {
-    for (int i = 0; i < 9; ++i)
-        board[i]=0;
-    for (int i = 0; i < 8; ++i)
-        boardTracker[i]=0;
+    for (int i = 0; i < 9; ++i) board[i]=0;
+    for (int i = 0; i < 8; ++i) boardTracker[i]=0;
+    for (int i = 0; i < 8; ++i) zeroTracker[i]=3;
+    //resetHistory();
 }
 
-char drawSymbol(int val)
+void Board::resetHistory(){
+    if(!currGameHistory){ return; }
+
+    currGameHistory->tail = currGameHistory->head;
+    currGameHistory->data = 1;
+
+    node* temp = currGameHistory->head;
+    node* startBoard = temp;
+
+    while(temp){
+        startBoard = temp->next;
+        delete temp;
+        temp = startBoard;
+    }
+}
+
+char Board::drawSymbol(int val)
 {
     switch(board[val]){
         case -1 : return 'x';
@@ -81,6 +122,9 @@ char drawSymbol(int val)
 
 //test Function
 void Board::testDraw(){
-    for (int i = 0; i < 8; ++i)
-        std::cout << boardTracker[i] << std::endl;
+    for (int i = 0; i < 8; ++i) cout << boardTracker[i] << endl;
+    for (int i = 0; i < 8; ++i) cout << zeroTracker[i] << endl;
 }
+
+
+
