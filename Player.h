@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H 
 
-#include "Global.h"
+#include "MLMachine.h"
 
 class Player
 {
@@ -17,8 +17,9 @@ private:
     int chooseHuman();
     int chooseML();
 
-    int type;
-    bool isFirstPlayer;
+    int _type;
+    bool _isFirstPlayer;
+    MLMachine _brain;
 };
 
 #endif

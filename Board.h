@@ -16,13 +16,14 @@ class Board
 
     private:
         /* data */
-        int board[9];
-        int boardTracker[8];
-        int zeroTracker[8];
-        int scoreKeeper[4];
-        root *currGameHistory;
+        int _board[9];
+        int _boardTracker[8];
+        int _zeroTracker[8];
+        int _scoreKeeper[4];
+        root *_currGameHistory;
 
         char drawSymbol(int val);
         void resetHistory();
+        int* copyArray(int array[],int length);
 };
 #endif

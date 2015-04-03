@@ -2,66 +2,70 @@
 
 Board::Board()
 {
-    resetBoard();
     for (int i = 0; i < 4; ++i)
-        scoreKeeper[i]=0;
+        _scoreKeeper[i]=0;
 
-    root *currGameHistory = new root;
     node *currBoard = new node;
-
-    currBoard->data = board;
+    currBoard->board = copyArray(_board,sizeof(_board));
+    currBoard->tracker = copyArray(_boardTracker,sizeof(_boardTracker));
+    currBoard->zeros = copyArray(_zeroTracker,sizeof(_zeroTracker));
     currBoard->next = NULL;
 
-    currGameHistory->head = currBoard;
-    currGameHistory->tail = currBoard;
-    currGameHistory->data = 1;
+    _currGameHistory = new root;
+    _currGameHistory->head = currBoard;
+    _currGameHistory->tail = currBoard;
+    _currGameHistory->data = 1;
 
+    resetBoard();
     draw();
 }
 
 bool Board::positionCheck(int position)
 {
-    return abs(board[position]);
+    return abs(_board[position]);
 }
 
 void Board::setPosition(int position, bool firstPlayerTurn)
 {
     int addVal = firstPlayerTurn ? -1 : 1;
 
-    board[position] = addVal;
-    boardTracker[position/3] += addVal;
-    zeroTracker[position/3]--;
+    _board[position] = addVal;
+    _boardTracker[position/3] += addVal;
+    _zeroTracker[position/3]--;
 
-    boardTracker[(position%3)+3] += addVal;
-    zeroTracker[(position%3)+3]--;
+    _boardTracker[(position%3)+3] += addVal;
+    _zeroTracker[(position%3)+3]--;
 
     if(position/4.0 == position/4){
-        boardTracker[6] += addVal;
-        zeroTracker[6]--;
+        _boardTracker[6] += addVal;
+        _zeroTracker[6]--;
     }
 
     if(position==2 || position==4 || position==6){
-        boardTracker[7] += addVal;
-        zeroTracker[7]--;
+        _boardTracker[7] += addVal;
+        _zeroTracker[7]--;
     }
 
     node *currBoard = new node;
-    currBoard->data = board;
+    currBoard->board = copyArray(_board,sizeof(_board));
+    currBoard->tracker = copyArray(_boardTracker,sizeof(_boardTracker));
+    currBoard->zeros = copyArray(_zeroTracker,sizeof(_zeroTracker));
     currBoard->next = NULL;
 
-    currGameHistory->tail->next = currBoard;
-    currGameHistory->tail = currBoard;
-    currGameHistory->data +=1;
+    _currGameHistory->tail->next = currBoard;
+    _currGameHistory->tail = currBoard;
+    _currGameHistory->data += 1;
 }
 
-int Board::win(){
+int Board::win()
+{
     for (int i = 0; i < 8; ++i)
-        if(abs(boardTracker[i])==3){
+        if(abs(_boardTracker[i])==3){
             return 2; //someone won
         } 
 
     for (int i = 0; i < 9; ++i)
-        if(board[i]==0){
+        if(_board[i]==0){
             return 0; //no one has won yet
         } 
 
@@ -89,19 +93,22 @@ void Board::draw()
 
 void Board::resetBoard()
 {
-    for (int i = 0; i < 9; ++i) board[i]=0;
-    for (int i = 0; i < 8; ++i) boardTracker[i]=0;
-    for (int i = 0; i < 8; ++i) zeroTracker[i]=3;
-    //resetHistory();
+    for (int i = 0; i < 9; ++i) _board[i]=0;
+    for (int i = 0; i < 8; ++i) _boardTracker[i]=0;
+    for (int i = 0; i < 8; ++i) _zeroTracker[i]=3;
+    resetHistory();
 }
 
-void Board::resetHistory(){
-    if(!currGameHistory){ return; }
+void Board::resetHistory()
+{
+    cout << "hereh";
+    if(_currGameHistory->tail==_currGameHistory->head){ return; }
 
-    currGameHistory->tail = currGameHistory->head;
-    currGameHistory->data = 1;
+    cout << "out";
+    _currGameHistory->tail = _currGameHistory->head;
+    _currGameHistory->data = 1;
 
-    node* temp = currGameHistory->head;
+    node* temp = _currGameHistory->head;
     node* startBoard = temp;
 
     while(temp){
@@ -113,17 +120,24 @@ void Board::resetHistory(){
 
 char Board::drawSymbol(int val)
 {
-    switch(board[val]){
+    switch(_board[val]){
         case -1 : return 'x';
         case 1: return 'o';
         default: return '0'+val;
     }
 }
 
+int* Board::copyArray(int array[], int length){
+    int* temp = new int[length];
+    for(int i=0; i < length; i++) temp[i]=array[i];
+    return temp;
+}
+
 //test Function
-void Board::testDraw(){
-    for (int i = 0; i < 8; ++i) cout << boardTracker[i] << endl;
-    for (int i = 0; i < 8; ++i) cout << zeroTracker[i] << endl;
+void Board::testDraw()
+{
+    for (int i = 0; i < 8; ++i) cout << _boardTracker[i] << endl;
+    for (int i = 0; i < 8; ++i) cout << _zeroTracker[i] << endl;
 }
 
 

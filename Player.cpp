@@ -2,19 +2,23 @@
 
 Player::Player(bool firstPlayer)
 {
-    type = 0;
-    isFirstPlayer = firstPlayer;
+    _type = 0;
+    _isFirstPlayer = firstPlayer;
 }
 
 Player::Player(int typeInit, bool firstPlayer)
 {
-    type = typeInit;
-    isFirstPlayer = firstPlayer;
+    _type = typeInit;
+    _isFirstPlayer = firstPlayer;
+
+    if(typeInit == 2){
+        _brain = MLMachine();
+    }
 }
 
 int Player::choose()
 {
-    switch (type){
+    switch (_type){
         case 1:
             return chooseHuman();
             break;
@@ -27,11 +31,11 @@ int Player::choose()
 }
 
 int Player::getType(){
-    return type;
+    return _type;
 }
 
 bool Player::isPlayerOne(){
-    return isFirstPlayer;
+    return _isFirstPlayer;
 }
 
 int Player::chooseRandom()
@@ -48,7 +52,6 @@ int Player::chooseHuman()
 
 int Player::chooseML()
 {
-
     return -1;
 }
 

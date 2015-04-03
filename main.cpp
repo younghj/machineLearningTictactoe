@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     //argc=number of arguments
 {
     //system("clear");
-    bool firstPlayerTurn;
+    bool firstPlayerTurn=true;
     int numGame, count=0, position;
     int scoreKeeper[3]={0};
     int oneType, twoType;
@@ -28,8 +28,7 @@ int main(int argc, char *argv[])
     cout << "Please choose type for Player 2:" << endl;
     cin >> twoType;
 
-    Player one(oneType), two(twoType);
-    firstPlayerTurn = true;
+    Player one(oneType,firstPlayerTurn), two(twoType,!firstPlayerTurn);
     clock_t startTime = clock();
 
 startGame:
