@@ -10,9 +10,11 @@ class Board
         void draw();
         void resetBoard();
         void setPosition(int position, bool firstPlayerTurn);
-        int win();
+        int win(bool turn);
         void testDraw();
         bool positionCheck(int position);
+
+        root* getHistory();
 
     private:
         /* data */
@@ -24,6 +26,6 @@ class Board
 
         char drawSymbol(int val);
         void resetHistory();
-        int* copyArray(int array[],int length);
+        //int* copyArray(int array[],int length);
 };
 #endif

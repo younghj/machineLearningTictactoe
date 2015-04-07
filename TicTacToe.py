@@ -301,9 +301,9 @@ class PerformanceSystem:
     def updateWeights(self,history,trainingExamples):
         for i in range(0,len(history)):
             h0,h1,h2,h3,h4,h5,h6 = self.hypothesis
-            vEst = self.evaluateBoard(history[i])
-            x1,x2,x3,x4,x5,x6 = trainingExamples[i][0]
-            vTrain = trainingExamples[i][1]
+            vEst = self.evaluateBoard(history[i]) #hypothesis
+            x1,x2,x3,x4,x5,x6 = trainingExamples[i][0] #features
+            vTrain = trainingExamples[i][1] #y value
 
             h0 += self.trainingRate*(vTrain - vEst) #update Constant = learning rate
             h1 += self.trainingRate*(vTrain - vEst)*x1
@@ -314,6 +314,7 @@ class PerformanceSystem:
             h6 += self.trainingRate*(vTrain - vEst)*x6
 
             self.hypothesis = h0,h1,h2,h3,h4,h5,h6
+        print self.hypothesis
 
 
 class Critic:
@@ -321,7 +322,7 @@ class Critic:
         self.hypothesis = hypothesis
         self.mode = mode
         self.checker = ExperimentGenerator()
-        
+
     def evaluateBoard(self,board):
         x1,x2,x3,x4,x5,x6 = self.checker.getFeatures(board)
 
@@ -339,15 +340,15 @@ class Critic:
         trainingExamples = []
 
         for i in range(0,len(history)):
-            if(self.checker.isDone(history[i])): #current iteration is a done game
-                if(self.checker.getWinner(history[i]) == self.mode): #if winner of the game is current player
-                    trainingExamples.append([self.checker.getFeatures(history[i]), 101])
-                elif(self.checker.getWinner(history[i]) == 1): #if game is a tie
-                    trainingExamples.append([self.checker.getFeatures(history[i]), 0])
-                else: #if winner of the game is opponent
-                    trainingExamples.append([self.checker.getFeatures(history[i]), -100])
-            else: #current game is not a done game
-                if i+2 >= len(history): #last or second last iteration of history (aka current game being played)
+            #if(self.checker.isDone(history[i])): #current iteration is a done game
+                #if(self.checker.getWinner(history[i]) == self.mode): #if winner of the game is current player
+                    #trainingExamples.append([self.checker.getFeatures(history[i]), 100])
+                #elif(self.checker.getWinner(history[i]) == 1): #if game is a tie
+                    #trainingExamples.append([self.checker.getFeatures(history[i]), 0])
+                #else: #if winner of the game is opponent
+                    #trainingExamples.append([self.checker.getFeatures(history[i]), -100])
+            #else: #current game is not a done game
+                if i >= len(history)-2: #last or second last iteration of history (aka current game being played)
                     if(self.checker.getWinner(history[len(history)-1]) == 0): #current game doesn't have a winner
                         trainingExamples.append([self.checker.getFeatures(history[i]), 0])
                     elif(self.checker.getWinner(history[len(history)-1]) == self.mode):
@@ -402,7 +403,9 @@ for i in range(0,1000):
     critic1.setHypothesis(player1.getHypothesis())
     critic2.setHypothesis(player2.getHypothesis())
 
+    print "player 1"
     player1.updateWeights(board.getHistory(),critic1.getTrainingExamples(board.getHistory()))
+    print "player 2"
     player2.updateWeights(board.getHistory(),critic2.getTrainingExamples(board.getHistory()))
 
 print "X won " + str(xwins) + " games."

@@ -2,22 +2,30 @@
 
 Board::Board()
 {
-    for (int i = 0; i < 4; ++i)
-        _scoreKeeper[i]=0;
+    for (int i = 0; i < 4; ++i) _scoreKeeper[i]=0;
+
+    _currGameHistory = new root;
+    _currGameHistory->head = NULL;
+    _currGameHistory->tail = NULL;
+    resetBoard();
 
     node *currBoard = new node;
     currBoard->board = copyArray(_board,sizeof(_board));
+
     currBoard->tracker = copyArray(_boardTracker,sizeof(_boardTracker));
     currBoard->zeros = copyArray(_zeroTracker,sizeof(_zeroTracker));
     currBoard->next = NULL;
 
-    _currGameHistory = new root;
+
     _currGameHistory->head = currBoard;
     _currGameHistory->tail = currBoard;
     _currGameHistory->data = 1;
 
-    resetBoard();
     draw();
+}
+
+root* Board::getHistory(){
+    return _currGameHistory;
 }
 
 bool Board::positionCheck(int position)
@@ -41,12 +49,13 @@ void Board::setPosition(int position, bool firstPlayerTurn)
         _zeroTracker[6]--;
     }
 
-    if(position==2 || position==4 || position==6){
+    if(position%2==0 && position < 7 && position!=0){
         _boardTracker[7] += addVal;
         _zeroTracker[7]--;
     }
 
     node *currBoard = new node;
+    currBoard->data = position;
     currBoard->board = copyArray(_board,sizeof(_board));
     currBoard->tracker = copyArray(_boardTracker,sizeof(_boardTracker));
     currBoard->zeros = copyArray(_zeroTracker,sizeof(_zeroTracker));
@@ -57,19 +66,18 @@ void Board::setPosition(int position, bool firstPlayerTurn)
     _currGameHistory->data += 1;
 }
 
-int Board::win()
+int Board::win(bool turn)
 {
     for (int i = 0; i < 8; ++i)
-        if(abs(_boardTracker[i])==3){
-            return 2; //someone won
-        } 
+        if(abs(_boardTracker[i])==3) return (!turn?1:-1); //someone won
 
-    for (int i = 0; i < 9; ++i)
+    for (int i = 0; i < 9; ++i){
         if(_board[i]==0){
-            return 0; //no one has won yet
+            return 2; //keep on going
         } 
-
-    return 1;//tie
+    }
+    
+    return 0;//tie
 }
 
 
@@ -101,21 +109,12 @@ void Board::resetBoard()
 
 void Board::resetHistory()
 {
-    cout << "hereh";
     if(_currGameHistory->tail==_currGameHistory->head){ return; }
-
-    cout << "out";
     _currGameHistory->tail = _currGameHistory->head;
     _currGameHistory->data = 1;
 
-    node* temp = _currGameHistory->head;
-    node* startBoard = temp;
-
-    while(temp){
-        startBoard = temp->next;
-        delete temp;
-        temp = startBoard;
-    }
+    deleteNode(_currGameHistory->head->next);
+    _currGameHistory->head->next=NULL;
 }
 
 char Board::drawSymbol(int val)
@@ -126,19 +125,4 @@ char Board::drawSymbol(int val)
         default: return '0'+val;
     }
 }
-
-int* Board::copyArray(int array[], int length){
-    int* temp = new int[length];
-    for(int i=0; i < length; i++) temp[i]=array[i];
-    return temp;
-}
-
-//test Function
-void Board::testDraw()
-{
-    for (int i = 0; i < 8; ++i) cout << _boardTracker[i] << endl;
-    for (int i = 0; i < 8; ++i) cout << _zeroTracker[i] << endl;
-}
-
-
 

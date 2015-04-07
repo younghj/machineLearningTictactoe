@@ -1,18 +1,170 @@
 #include "MLMachine.h"
 
-MLMachine::MLMachine()
+MLMachine::MLMachine(){
+    _first=false;
+    _trainingRate=0;
+    for(int i=0;i<8;i++) _hypothesis[i]=0;
+}
+
+
+MLMachine::MLMachine(bool first, double rate)
 {
-    
-
+    _first = first;
+    _trainingRate = rate;
+    for(int i=0;i<8;i++) _hypothesis[i]=0.5;
 }
 
-node* MLMachine::getSuccessors(){
-
-    node *something = new node;
-    return something;
-
+double MLMachine::absol(double n){
+    const double ret[2]={n,-n};
+    return ret[n<0];
 }
 
-double MLMachine::evaluateBoard(){
-    return 1.2;
+void MLMachine::updateHypothesis(root * history){
+    trainingSet* sets = getTrainingSet(history);
+    node* currNode = history->head;
+    do {
+        for(int i=0;i<8;i++){
+            double h_x = evaluateBoard(currNode);
+            _hypothesis[i] += _trainingRate * sets->features[i] * (sets->y - h_x);
+        }
+        currNode = currNode->next;
+        sets = sets->next;
+        for(int i=0;i<8;i++) cout<<_hypothesis[i]<< " ";
+        cout <<endl;
+    } while(sets!=NULL);
+}
+
+int MLMachine::choose(node * currBoard){
+    node* successors = getSuccessors(currBoard);
+
+    int bestPosition = successors->data;
+    double bestScore = evaluateBoard(successors);
+
+    while(successors->next!=NULL){
+        successors = successors->next;
+        double score =  evaluateBoard(successors);
+        if(bestScore < score){
+            bestScore = score;
+            bestPosition = successors->data;
+        }
+    }
+
+    return bestPosition;
+}
+
+node* MLMachine::getSuccessors(node * currBoard){
+    node* frontNode,* backNode;
+    int* board = currBoard->board;
+
+    frontNode = NULL;
+    backNode = NULL;
+
+    int insert = _first ? 1 : -1;
+    for(int i=0; i<9; i++){
+        if(board[i]==0){
+            node* newNode = new node;
+            newNode->data = i;
+
+            int* tempBoard = new int;
+            int* tempTracker = new int;
+            int* tempZeros = new int;
+
+            tempBoard = copyArray(board,9);
+            tempBoard[i] = insert;
+
+            tempTracker = copyArray(currBoard->tracker,8);
+            tempZeros = copyArray(currBoard->zeros,8);
+
+            tempTracker[i/3] += insert;
+            tempZeros[i/3]--;
+
+            tempTracker[(i%3)+3] += insert;
+            tempZeros[(i%3)+3]--;
+
+            if(i/4.0 == i/4){
+                tempTracker[6] += insert;
+                tempZeros[6]--;
+            }
+            if(i%2==0 && i < 7 && i!=0){
+                tempTracker[7] += insert;
+                tempZeros[7]--;
+            }
+
+            newNode->board = tempBoard;
+            newNode->tracker = tempTracker;
+            newNode->zeros = tempZeros;
+            newNode->next = NULL;
+
+            if(frontNode == NULL) frontNode= newNode;
+            if(backNode != NULL) backNode->next = newNode;
+
+            backNode = newNode;
+        }
+    }
+    return frontNode;
+}
+
+double MLMachine::evaluateBoard(node * evalBoard){
+    int* features = getFeatures(evalBoard);
+    double evaluation=0;
+    for(int i=0;i<8;i++) evaluation+=_hypothesis[i]*features[i];
+
+    return evaluation;
+}
+
+int* MLMachine::getFeatures(node * featBoard){
+    int * features = new int[8];
+    features[0]=1;
+    for(int i = 1; i < 8; i++) features[i] = 0;
+    for(int i = 0; i < 8; i++){
+        if(featBoard->zeros[i]==3) features[1]++;
+        if(featBoard->zeros[i]==2) features[(featBoard->tracker[i]==1?2:3)]++;
+        if(featBoard->zeros[i]==1 && featBoard->tracker[i]!=0)  features[(featBoard->tracker[i]==2?4:5)]++;
+        if(featBoard->zeros[i]==0 && abs(featBoard->tracker[i])>1) features[(featBoard->tracker[i]==3?6:7)]++;
+    }
+    return features;
+    /*
+     * 0 - number of empty rows
+     * 1 - number of rows with only one o
+     * 2 - number of rows with only one x
+     * 3 - number of rows with only two o
+     * 4 - number of rows with only two x
+     * 5 - number of rows with all o
+     * 6 - number of rows with all x
+     */
+}
+
+int MLMachine::getWinner(node* evalBoard){
+    for(int i=0;i<9;i++){
+        if(evalBoard->tracker[i]==3)return 1;
+        if(evalBoard->tracker[i]==-3)return 0;
+    }return -1;
+}
+
+trainingSet* MLMachine::getTrainingSet(root * history){
+    //feature + evaluation
+    trainingSet* firstSet;
+    trainingSet* movingSet;
+    node* currNode = history->head;
+    int winner = getWinner(history->tail);
+
+    for(int i=0;i<history->data;i++){
+        int val=(winner==_first?1:-1);
+        trainingSet* currSet = new trainingSet;
+
+        currSet->next = NULL;
+        currSet->features = getFeatures(currNode);
+
+        if(winner==-1) val = 0;
+        currSet->y = (i < history->data-2) ? 100 * val : evaluateBoard(currNode);
+
+        if(!i)
+            firstSet = currSet;
+        else
+            movingSet->next = currSet;
+        movingSet= currSet;
+        currNode = currNode->next;
+    }
+
+    return firstSet;
 }
