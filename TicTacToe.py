@@ -4,6 +4,7 @@
 # 2 represents an O
 import copy
 import random
+import math
 
 class ExperimentGenerator:
     
@@ -213,6 +214,7 @@ class ExperimentGenerator:
         self.board[y][x] = 2
 
     def printBoard(self, board = 0):
+        tracker=0
         if board == 0:
             board = self.board
 
@@ -221,11 +223,12 @@ class ExperimentGenerator:
             srow = []
             for entry in row:
                 if entry == 0:
-                    srow.append(' ')
+                    srow.append(str(tracker))
                 elif entry == 1:
                     srow.append('X')
                 elif entry == 2:
                     srow.append('O')
+                tracker+=1
             sboard.append(srow)
 
         print ""
@@ -348,7 +351,7 @@ class Critic:
                 #else: #if winner of the game is opponent
                     #trainingExamples.append([self.checker.getFeatures(history[i]), -100])
             #else: #current game is not a done game
-                if i >= len(history)-2: #last or second last iteration of history (aka current game being played)
+                if i >= len(history)-2: #last or second last iteration of history 
                     if(self.checker.getWinner(history[len(history)-1]) == 0): #current game doesn't have a winner
                         trainingExamples.append([self.checker.getFeatures(history[i]), 0])
                     elif(self.checker.getWinner(history[len(history)-1]) == self.mode):
@@ -357,6 +360,7 @@ class Critic:
                         trainingExamples.append([self.checker.getFeatures(history[i]), -100]) 
                 else: #if not last or second last iteration of history
                     trainingExamples.append([self.checker.getFeatures(history[i]), self.evaluateBoard(history[i+2])])
+                    print "self.eval" + str(self.evaluateBoard(history[i+2]));
 
         return trainingExamples
 
@@ -366,7 +370,7 @@ hypothesis1 = (.5,.5,.5,.5,.5,.5,.5)
 hypothesis2 = (.5,.5,.5,.5,.5,.5,.5)
 player1 = PerformanceSystem(board,hypothesis1,1)
 player2 = PerformanceSystem(board,hypothesis2,2)
-player2.setTrainingRate(.4)
+player2.setTrainingRate(.1)
 critic1 = Critic(hypothesis1,1)
 critic2 = Critic(hypothesis2,2)
 
@@ -429,8 +433,12 @@ while True:
             break
 
         board.printBoard()
-        xval = input("Enter xcoordinate: ")
-        yval = input("Enter ycoordinate: ")
+        val = input("Enter a location: ")
+        xval = int(val/3);
+        yval = val%3;
+        print xval, yval
+        #xval = input("Enter xcoordinate: ")
+        #yval = input("Enter ycoordinate: ")
         board.setO(xval,yval)
 
 

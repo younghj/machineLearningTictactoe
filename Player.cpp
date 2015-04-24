@@ -7,10 +7,10 @@ Player::Player(bool firstPlayer){
     srand(time(0));
 }
 
-Player::Player(int typeInit, bool firstPlayer){
+Player::Player(int typeInit, bool firstPlayer, double trainingRate){
     _type = typeInit;
     _isFirstPlayer = firstPlayer;
-    brain = MLMachine(firstPlayer, 0.5);
+    brain = MLMachine(firstPlayer, trainingRate);
     srand(time(0));
 }
 

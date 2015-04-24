@@ -8,7 +8,7 @@ class Player
 public:
     int choose(node * currBoard);
     Player(bool firstPlayer);
-    Player(int type, bool firstPlayer);
+    Player(int type, bool firstPlayer, double trainingRate);
     int getType();
     bool isPlayerOne();
 
