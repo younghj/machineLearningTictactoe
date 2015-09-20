@@ -20,8 +20,6 @@ Board::Board()
     _currGameHistory->head = currBoard;
     _currGameHistory->tail = currBoard;
     _currGameHistory->data = 1;
-
-    draw();
 }
 
 root* Board::getHistory(){
@@ -35,7 +33,7 @@ bool Board::positionCheck(int position)
 
 void Board::setPosition(int position, bool firstPlayerTurn)
 {
-    int addVal = firstPlayerTurn ? -1 : 1;
+    int addVal = firstPlayerTurn ? 1 : -1;
 
     _board[position] = addVal;
     _boardTracker[position/3] += addVal;

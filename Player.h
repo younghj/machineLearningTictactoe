@@ -11,13 +11,16 @@ public:
     Player(int type, bool firstPlayer, double trainingRate);
     int getType();
     bool isPlayerOne();
+    double* getMLHypothesis();
+    void setMLHypothesis(double* hyp);
+    void seeOpponentMove(int pos);
 
     MLMachine brain;
 
 private:
-    int chooseRandom();
+    int chooseRandom(node* currBoard);
     int chooseHuman();
-    int chooseML(node * currBoard);
+    int chooseML();
 
     int _type;
     bool _isFirstPlayer;

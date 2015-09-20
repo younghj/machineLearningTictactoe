@@ -416,6 +416,7 @@ print "X won " + str(xwins) + " games."
 print "O won " + str(owins) + " games."
 print "There were " + str(draws) + " draws."
 
+first=True
 while True:
     board = ExperimentGenerator()
     player1.setBoard(board)
@@ -428,18 +429,24 @@ while True:
         #board.setX(xval,yval)
 
         #player1.chooseRandom()
-        player1.chooseMove()
+        board.printBoard()
+        if(first):
+            player1.chooseMove()
+        else:
+            val = input("Enter a location: ")
+            yval = int(val/3);
+            xval = val%3;
+            print xval, yval
+            #xval = input("Enter xcoordinate: ")
+            #yval = input("Enter ycoordinate: ")
+            board.setO(xval,yval)
+
+        first=not(first)
+
         if board.isDone():
             break
 
         board.printBoard()
-        val = input("Enter a location: ")
-        xval = int(val/3);
-        yval = val%3;
-        print xval, yval
-        #xval = input("Enter xcoordinate: ")
-        #yval = input("Enter ycoordinate: ")
-        board.setO(xval,yval)
 
 
         #player2.chooseMove()

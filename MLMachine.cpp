@@ -14,18 +14,35 @@ MLMachine::MLMachine(bool first, double rate)
     for(int i=0;i<8;i++) _hypothesis[i]=0.5;
 }
 
+void MLMachine::registerOpponentMove(int pos){
+   _board.setPosition(pos, false);
+}
+
 double MLMachine::absol(double n){
     const double ret[2]={n,-n};
     return ret[n<0];
 }
 
-void MLMachine::updateHypothesis(root * history){
+double* MLMachine::getHypothesis(){
+    return _hypothesis;
+}
+
+void MLMachine::setHypothesis(double *hyp){
+    for(int i=0;i<8;i++)_hypothesis[i] = hyp[i];
+}
+
+void MLMachine::resetBoard(){
+    _board.resetBoard();
+}
+
+void MLMachine::updateHypothesis(){
+    root * history = _board.getHistory();
     trainingSet* sets = getTrainingSet(history);
     node* currNode = history->head;
     do {
         double h_x = evaluateBoard(currNode);
         for(int i=0;i<8;i++){
-            _hypothesis[i] += _trainingRate * sets->features[i] * (sets->y - h_x);
+            _hypothesis[i] += _trainingRate * sets->features[i] * (sets->y - h_x)/8.0;
         }
         currNode = currNode->next;
         sets = sets->next;
@@ -34,8 +51,8 @@ void MLMachine::updateHypothesis(root * history){
     } while(sets!=NULL);
 }
 
-int MLMachine::choose(node * currBoard){
-    node* successors = getSuccessors(currBoard);
+int MLMachine::choose(){
+    node* successors = getSuccessors();
 
     int bestPosition = successors->data;
     double bestScore = evaluateBoard(successors);
@@ -49,17 +66,19 @@ int MLMachine::choose(node * currBoard){
         }
     }
 
+    _board.setPosition(bestPosition,true);
     return bestPosition;
 }
 
-node* MLMachine::getSuccessors(node * currBoard){
+node* MLMachine::getSuccessors(){
+    node * currBoard = _board.getHistory()->tail;
     node* frontNode,* backNode;
     int* board = currBoard->board;
 
     frontNode = NULL;
     backNode = NULL;
 
-    int insert = _first ? 1 : -1;
+    int insert = 1;
     for(int i=0; i<9; i++){
         if(board[i]==0){
             node* newNode = new node;
@@ -107,11 +126,8 @@ node* MLMachine::getSuccessors(node * currBoard){
 double MLMachine::evaluateBoard(node * evalBoard){
     int* features = getFeatures(evalBoard);
 
-    cout << "features: ";
-    for(int i=0;i<8;i++) cout << features[i] << " ";
-    
     double evaluation=0;
-    for(int i=0;i<8;i++) evaluation+=_hypothesis[i]*features[i]; cout << evaluation << "here " << endl;
+    for(int i=0;i<8;i++) evaluation+=_hypothesis[i]*features[i]; 
 
     return evaluation;
 }
@@ -138,7 +154,7 @@ int* MLMachine::getFeatures(node * featBoard){
      */
 }
 
-int MLMachine::getWinner(node* evalBoard){
+int MLMachine::getWinner(node * evalBoard){
     for(int i=0;i<9;i++){
         if(evalBoard->tracker[i]==3)return 1;
         if(evalBoard->tracker[i]==-3)return 0;
@@ -153,7 +169,7 @@ trainingSet* MLMachine::getTrainingSet(root * history){
     int winner = getWinner(history->tail);
 
     for(int i=0;i<history->data;i++){
-        int val=(winner==_first?1:-1);
+        int val=(winner?100:-100);
         trainingSet* currSet = new trainingSet;
 
         currSet->next = NULL;
@@ -161,13 +177,14 @@ trainingSet* MLMachine::getTrainingSet(root * history){
 
         if(winner==-1) val = 0;
 
-        cout << "number of total games:" << history->data;
+        //cout << "number of total games:" << history->data;
 
         if(i >= history->data-2)
-            currSet->y = 100*val;
+            currSet->y = val;
         else{
             node* tempNode = currNode->next->next;
             currSet->y = evaluateBoard(tempNode);
+            //currSet->y = evaluateBoard(currNode);
         }
 
         if(!i)
