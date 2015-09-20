@@ -7,23 +7,26 @@ class Player
 {
 public:
     int choose(node * currBoard);
-    Player(bool firstPlayer);
-    Player(int type, bool firstPlayer, double trainingRate);
+    Player();
+    Player(int type, double trainingRate);
     int getType();
     bool isPlayerOne();
     double* getMLHypothesis();
     void setMLHypothesis(double* hyp);
     void seeOpponentMove(int pos);
+    void updateHypothesis();
+    void resetInternalBoard();
+    void setTrainingRate(double rate, bool reset);
 
-    MLMachine brain;
 
 private:
     int chooseRandom(node* currBoard);
+    int chooseDumbRandom();
     int chooseHuman();
     int chooseML();
 
     int _type;
-    bool _isFirstPlayer;
+    MLMachine _brain;
 };
 
 #endif

@@ -1,15 +1,13 @@
 #include "MLMachine.h"
 
 MLMachine::MLMachine(){
-    _first=false;
     _trainingRate=0;
     for(int i=0;i<8;i++) _hypothesis[i]=0;
 }
 
 
-MLMachine::MLMachine(bool first, double rate)
+MLMachine::MLMachine(double rate)
 {
-    _first = first;
     _trainingRate = rate;
     for(int i=0;i<8;i++) _hypothesis[i]=0.5;
 }
@@ -25,6 +23,14 @@ double MLMachine::absol(double n){
 
 double* MLMachine::getHypothesis(){
     return _hypothesis;
+}
+
+void MLMachine::setTrainingRate(double rate, bool reset){
+    _trainingRate = rate;
+    if(reset){
+        for(int i=0;i<8;i++) _hypothesis[i] = 0.5;
+        _board.resetBoard();
+    }
 }
 
 void MLMachine::setHypothesis(double *hyp){
@@ -44,14 +50,17 @@ void MLMachine::updateHypothesis(){
         for(int i=0;i<8;i++){
             _hypothesis[i] += _trainingRate * sets->features[i] * (sets->y - h_x)/8.0;
         }
+        delete sets->features;
         currNode = currNode->next;
         sets = sets->next;
-        for(int i=0;i<8;i++) cout<<_hypothesis[i]<< " ";
-        cout <<endl;
+        //for(int i=0;i<8;i++) cout<<_hypothesis[i]<< " ";
+        //cout <<endl;
     } while(sets!=NULL);
 }
 
 int MLMachine::choose(){
+    if(_board.isEmptyBoard()) return rand()%9;
+
     node* successors = getSuccessors();
 
     int bestPosition = successors->data;
@@ -65,6 +74,7 @@ int MLMachine::choose(){
             bestPosition = successors->data;
         }
     }
+    deleteNode(successors);
 
     _board.setPosition(bestPosition,true);
     return bestPosition;
@@ -129,6 +139,8 @@ double MLMachine::evaluateBoard(node * evalBoard){
     double evaluation=0;
     for(int i=0;i<8;i++) evaluation+=_hypothesis[i]*features[i]; 
 
+    delete features;
+
     return evaluation;
 }
 
@@ -169,13 +181,14 @@ trainingSet* MLMachine::getTrainingSet(root * history){
     int winner = getWinner(history->tail);
 
     for(int i=0;i<history->data;i++){
-        int val=(winner?100:-100);
+        int win=100, lose=-100;
+        double val=(winner?win:lose);
         trainingSet* currSet = new trainingSet;
 
         currSet->next = NULL;
         currSet->features = getFeatures(currNode);
 
-        if(winner==-1) val = 0;
+        if(winner==-1) val = (win+lose)/2.0;
 
         //cout << "number of total games:" << history->data;
 

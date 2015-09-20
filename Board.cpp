@@ -124,3 +124,8 @@ char Board::drawSymbol(int val)
     }
 }
 
+bool Board::isEmptyBoard(){
+    for(int i=0;i<9;i++){
+        if(_board[i]!=0) return false;
+    }return true;
+}

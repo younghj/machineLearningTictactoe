@@ -13,6 +13,7 @@ class Board
         int win(bool turn);
         void testDraw();
         bool positionCheck(int position);
+        bool isEmptyBoard();
 
         root* getHistory();
 

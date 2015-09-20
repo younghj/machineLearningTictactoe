@@ -2,38 +2,36 @@
 
 int smartRandHelper(node* board, int zeroPos);
 
-Player::Player(bool firstPlayer){
+Player::Player(){
     _type = 0;
-    _isFirstPlayer = firstPlayer;
-    brain = MLMachine();
+    _brain = MLMachine();
     srand(time(0));
 }
 
-Player::Player(int typeInit, bool firstPlayer, double trainingRate){
+Player::Player(int typeInit, double trainingRate){
     _type = typeInit;
-    _isFirstPlayer = firstPlayer;
-    brain = MLMachine(firstPlayer, trainingRate);
+    _brain = MLMachine(trainingRate);
     srand(time(0));
 }
 
 double* Player::getMLHypothesis(){
-    return brain.getHypothesis();
+    return _brain.getHypothesis();
 }
 
 void Player::setMLHypothesis(double *hyp){
-    brain.setHypothesis(hyp);
+    _brain.setHypothesis(hyp);
 }
 
 int Player::choose(node * currBoard){
     switch (_type){
         case 1:
-            return chooseHuman();
-            break;
+            return chooseDumbRandom();
         case 2:
-            return chooseML();
-            break;
-        default:
             return chooseRandom(currBoard);
+        case 3:
+            return chooseHuman();
+        default: //case 0:
+            return chooseML();
     }
 }
 
@@ -41,8 +39,8 @@ int Player::getType(){
     return _type;
 }
 
-bool Player::isPlayerOne(){
-    return _isFirstPlayer;
+int Player::chooseDumbRandom(){
+    return rand()%9;
 }
 
 int Player::chooseRandom(node * currBoard){
@@ -103,10 +101,22 @@ int Player::chooseHuman(){
 }
 
 int Player::chooseML(){
-    int pos = brain.choose();
+    int pos = _brain.choose();
     return pos;
 }
 
 void Player::seeOpponentMove(int pos){
-    brain.registerOpponentMove(pos);
+    _brain.registerOpponentMove(pos);
+}
+
+void Player::updateHypothesis(){
+    _brain.updateHypothesis();
+}
+
+void Player::resetInternalBoard(){
+    _brain.resetBoard();
+}
+
+void Player::setTrainingRate(double rate, bool reset){
+    _brain.setTrainingRate(rate,reset);
 }
